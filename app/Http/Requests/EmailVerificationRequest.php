@@ -14,3 +14,4 @@ class EmailVerificationRequest extends CoreRequest
        return User::find($this->route('id'));
    }
 }
+

@@ -35,19 +35,14 @@ jobs:
         run: |
           ssh -i ~/.ssh/github_ci ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd /var/www/api
-
-            # Install dependencies
             composer install --no-dev --prefer-dist --no-progress --no-suggest
-
-            # Laravel cache commands
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
-
+            sudo chown -R www-data:www-data .
             # Set permissions
             chown -R ubuntu:ubuntu .
             chmod -R 775 storage bootstrap/cache
-
-            # Restart PHP-FPM (assumes user has permission or no sudo required)
-            systemctl restart php8.2-fpm || echo "Restart failed — check permission or use sudo if needed."
+            sudo chmod -R 775 storage bootstrap/cache
+            sudo systemctl restart php8.2-fpm
           EOF

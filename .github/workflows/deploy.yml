@@ -23,6 +23,8 @@ jobs:
       - name: Deploy Laravel via rsync
         run: |
           rsync -avz \
+          sudo chown -R ubuntu:www-data /var/www/api/database
+          sudo chmod -R 775 /var/www/api/database
             --exclude ".git" \
             --exclude "node_modules" \
             --exclude "vendor" \
@@ -39,8 +41,6 @@ jobs:
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
-            sudo chown -R ubuntu:www-data /var/www/api/database
-            sudo chmod -R 775 /var/www/api/database
             sudo chmod -R 775 storage bootstrap/cache
             sudo systemctl restart php8.2-fpm
           EOF

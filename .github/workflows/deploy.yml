@@ -23,8 +23,6 @@ jobs:
       - name: Deploy Laravel via rsync
         run: |
           rsync -avz \
-          sudo chown -R ubuntu:www-data /var/www/api/database
-          sudo chmod -R 775 /var/www/api/database
             --exclude ".git" \
             --exclude "node_modules" \
             --exclude "vendor" \

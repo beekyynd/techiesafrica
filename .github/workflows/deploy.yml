@@ -1,4 +1,4 @@
-name: Deploy Laravel to EC2 with rsync
+name: Deploy API to EC2 with rsync
 
 on:
   push:

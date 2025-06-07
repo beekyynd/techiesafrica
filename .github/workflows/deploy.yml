@@ -1,4 +1,4 @@
-name: Deploy API to EC2 with rsync
+name: Deploy API to EC2
 
 on:
   push:
@@ -10,38 +10,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH access
+      - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/github_ci
           chmod 600 ~/.ssh/github_ci
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy via rsync
+      - name: Deploy Laravel via rsync
         run: |
           rsync -avz --delete \
             --exclude ".git" \
             --exclude "node_modules" \
-            --exclude "storage/logs" \
-            --exclude "storage/app/public" \
-            --exclude ".env" \
-            --exclude "tests" \
             --exclude "vendor" \
-            --exclude "public/storage" \
             -e "ssh -i ~/.ssh/github_ci" \
             ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/api
 
-      - name: Run Laravel commands on EC2
+      - name: Run post-deploy commands on EC2
         run: |
           ssh -i ~/.ssh/github_ci ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd /var/www/api
-            composer install --no-interaction --prefer-dist --optimize-autoloader
-            php artisan migrate --force
+            composer install --no-dev --prefer-dist --no-progress --no-suggest
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
-            sudo systemctl restart php8.2-fpm # adjust if you're using nginx/apache
+            sudo chown -R www-data:www-data .
+            sudo chmod -R 775 storage bootstrap/cache
+            sudo systemctl restart php8.2-fpm
           EOF

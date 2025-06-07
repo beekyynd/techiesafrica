@@ -1,4 +1,4 @@
-name: Deploy Mobile API to EC2
+name: Deploy Laravel to EC2
 
 on:
   push:
@@ -39,6 +39,7 @@ jobs:
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
+            sudo chown -R www-data:www-data .
             sudo chmod -R 775 storage bootstrap/cache
             sudo systemctl restart php8.2-fpm
           EOF

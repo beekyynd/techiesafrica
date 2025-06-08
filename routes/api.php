@@ -17,10 +17,10 @@ Route::middleware("guest")->group(function () {
 
     Route::get('/operations/credits', function () {
     return response()->json([
-        'operations' => App\Enums\OperationEnum::listOfCredits()
+        'operations' => \App\Enums\OperationEnum::listOfCredits()
     ]);
 });
-    
+
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {

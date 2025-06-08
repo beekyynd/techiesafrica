@@ -14,13 +14,6 @@ Route::middleware("guest")->group(function () {
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->middleware('guest')
     ->name('login');
-
-    Route::get('/operations/credits', function () {
-    return response()->json([
-        'operations' => \App\Enums\OperationEnum::listOfCredits()
-    ]);
-});
-
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -32,5 +25,10 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/operations/credits', function () {
+    return response()->json([
+        'operations' => \App\Enums\OperationEnum::listOfCredits()
+    ]);
+});
 
 });

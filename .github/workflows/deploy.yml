@@ -47,6 +47,8 @@ jobs:
             # Ownership and permissions
             sudo chown -R ubuntu:ubuntu /var/www/api
             chmod -R 775 /var/www/api
+            sudo chown -R www-data:www-data /var/www/api/database
+            sudo chmod -R 775 /var/www/api/database
             chmod -R 775 storage bootstrap/cache
             sudo chgrp -R www-data storage bootstrap/cache
 

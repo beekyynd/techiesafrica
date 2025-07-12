@@ -35,7 +35,6 @@ jobs:
             --exclude "node_modules" \
             --exclude "vendor" \
             --exclude ".env" \
-            --exclude "database/database.sqlite" \
             -e "ssh -i ~/.ssh/github_ci" \
             ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/api
 

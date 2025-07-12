@@ -23,7 +23,8 @@ jobs:
       - name: Fix EC2 directory permissions before rsync
         run: |
           ssh -i ~/.ssh/github_ci ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            # Make sure the directory exists and is owned by the right user
+            # Ensure the Laravel directory exists and is writable
+            sudo mkdir -p /var/www/api
             sudo chown -R $USER:$USER /var/www/api
             sudo chmod -R 775 /var/www/api
           EOF
@@ -35,7 +36,7 @@ jobs:
             --exclude "node_modules" \
             --exclude "vendor" \
             --exclude ".env" \
-            --exclude "database/database.sqlite" \
+            --exclude "database/database.sqlite" \  # important: prevent overwriting EC2's DB
             -e "ssh -i ~/.ssh/github_ci" \
             ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/api
 
@@ -44,20 +45,26 @@ jobs:
           ssh -i ~/.ssh/github_ci ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd /var/www/api
 
-            # Ownership and permissions
-            sudo chown -R ubuntu:ubuntu /var/www/api
-            chmod -R 775 /var/www/api
-            sudo chown -R www-data:www-data /var/www/api/database
-            sudo chmod -R 775 /var/www/api/database
+            # Ensure the database is writable, but not overwritten
+            sudo chown -R www-data:www-data database
+            sudo chmod -R 775 database
+
+            # Set proper permissions for other Laravel folders
             chmod -R 775 storage bootstrap/cache
             sudo chgrp -R www-data storage bootstrap/cache
 
-            # Laravel deploy steps
+            # Laravel deployment steps
             composer install --no-dev --prefer-dist --no-progress --no-suggest
-            php artisan migrate
+
+            # Run migrations and seeders without affecting the existing database file
+            php artisan migrate --force
+            php artisan db:seed --force
+
+            # Cache config, routes, views
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
 
+            # Restart PHP service
             sudo systemctl restart php8.2-fpm
           EOF

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\NG;
 use App\Models\USA;
+use App\Models\History;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -97,18 +98,36 @@ public function generateNumber(Request $request)
         ], 403);
     }
 
-    // Deduct credit
+    // Generate 10-digit number and attach +234
+    $randomDigits = mt_rand(1000000000, 9999999999);
+
+    $number = substr($randomDigits, 1);
+
+     // Deduct credit
     $user->credits -= $price;
     $user->save();
 
-    // Generate 10-digit number and attach +234
-    $randomDigits = mt_rand(1000000000, 9999999999);
-    $number = substr($randomDigits, 1);
+    // Save history
+    History::create([
+        'user_id' => $user->id,
+        'generated_number' => $number,
+        'credits_used' => $price,
+    ]);
 
     return response()->json([
         'number' => $number,
         'price' => $price,
         'user_balance' => $user->credits
+    ]);
+}
+
+public function listUsers()
+{
+
+    $users = User::all();
+
+    return response()->json([
+        'users' => $users
     ]);
 }
 

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use \App\Http\Controllers\NumberController;
+use \App\Http\Controllers\UserController;
 
 Route::middleware("guest")->group(function () {
 
@@ -21,7 +22,6 @@ Route::middleware("guest")->group(function () {
 
     Route::get('/countries/get', [NumberController::class, 'getCountryData'])
     ->name('countries.data');
-
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -34,5 +34,9 @@ Route::get('/user', function (Request $request) {
 });
 
 Route::get('/countries/generate', [NumberController::class, 'generateNumber']);
+
+Route::get('/user/history', [UserController::class, 'getHistory']);
+
+Route::post('/user/update', [UserController::class, 'updateUser']);
 
 });

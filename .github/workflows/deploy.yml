@@ -1,62 +1,31 @@
-name: Deploy Mobile API to EC2
-
+name: CPanel Deployment
 on:
   push:
     branches:
-      - master
-
+      - main
 jobs:
-  deploy:
+  FTP-Deploy-Action:
+    name: FTP-Deploy-Action
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v2.1.0
+      with:
+        fetch-depth: 2 
+    - name: Build assets
+      run: npm install && npm run build
 
-      - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/github_ci
-          chmod 600 ~/.ssh/github_ci
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+    - name: Install PHP and Composer
+      uses: shivammathur/setup-php@v2
+      with:
+          php-version: '8.2'
+          tools: 'composer'
 
-      - name: Fix EC2 directory permissions before rsync
-        run: |
-          ssh -i ~/.ssh/github_ci ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            # Make sure the directory exists and is owned by the right user
-            sudo chown -R $USER:$USER /var/www/api
-            sudo chmod -R 775 /var/www/api
-          EOF
-
-      - name: Deploy Laravel via rsync
-        run: |
-          rsync -avz \
-            --exclude ".git" \
-            --exclude "node_modules" \
-            --exclude "vendor" \
-            --exclude ".env" \
-            -e "ssh -i ~/.ssh/github_ci" \
-            ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/api
-
-      - name: Run post-deploy commands on EC2
-        run: |
-          ssh -i ~/.ssh/github_ci ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /var/www/api
-
-            # Ownership and permissions
-            sudo chown -R ubuntu:ubuntu /var/www/api
-            chmod -R 775 /var/www/api
-            sudo chown -R www-data:www-data /var/www/api/database
-            sudo chmod -R 775 /var/www/api/database
-            chmod -R 775 storage bootstrap/cache
-            sudo chgrp -R www-data storage bootstrap/cache
-
-            # Laravel deploy steps
-            composer install --no-dev --prefer-dist --no-progress --no-suggest
-            php artisan migrate
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-
-            sudo systemctl restart php8.2-fpm
-          EOF
+    - name: Install PHP dependencies
+      run: composer install --no-dev --optimize-autoloader
+        
+    - name: FTP-Deploy-Action
+      uses: SamKirkland/FTP-Deploy-Action@4.3.3
+      with:
+        server: ${{ secrets.SERVER }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}

@@ -3,14 +3,17 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Database\Seeders\NGUSASeeder; 
+
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Run the database seeds.
      */
     public function run(): void
     {
-        $this->call(NGUSASeeder::class);
+        $this->call([
+            UserSeeder::class,
+            ProductSeeder::class,
+        ]);
     }
 }

@@ -1,42 +1,30 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-use \App\Http\Controllers\NumberController;
-use \App\Http\Controllers\UserController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReportingController;
 
 Route::middleware("guest")->group(function () {
 
-    Route::post('/register', [RegisteredUserController::class, 'store'])
-    ->middleware('guest')
-    ->name('register');
+    Route::post('/register', [RegisteredUserController::class, 'store']);
 
-    Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-    ->middleware('guest')
-    ->name('login');
-
-    Route::get('/countries', [NumberController::class, 'listCountries'])
-    ->name('countries');
-
-    Route::get('/countries/get', [NumberController::class, 'getCountryData'])
-    ->name('countries.data');
+    Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 });
 
-Route::middleware(['auth:sanctum'])->group(function () {
-    
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->name('logout');
+Route::middleware('auth:sanctum')->group(function(){
+    Route::apiResource('products', ProductController::class);
+    Route::post('products/import-excel', [ProductController::class,'importExcel']);
+    Route::post('products/{product}/upload-image', [ProductController::class,'uploadImage']); // optional
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-});
+    Route::post('orders', [OrderController::class,'store']);
+    Route::get('orders', [OrderController::class,'index']);
+    Route::get('orders/{order}', [OrderController::class,'show']);
 
-Route::get('/countries/generate', [NumberController::class, 'generateNumber']);
+    Route::get('reports/low-stock', [ReportingController::class,'lowStock']);
+    Route::get('reports/sales-summary', [ReportingController::class,'salesSummary']);
 
-Route::get('/user/history', [UserController::class, 'getHistory']);
-
-Route::post('/user/update', [UserController::class, 'updateUser']);
-
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
 });

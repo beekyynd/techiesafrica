@@ -9,22 +9,26 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    
     public function up()
 {
-    Schema::create('ng', function (Blueprint $table) {
+    Schema::create('products', function (Blueprint $table) {
         $table->id();
-        $table->integer('webID')->nullable();
-        $table->string('website')->nullable();
-        $table->float('price');
+        $table->string('name');
+        $table->string('sku')->unique();
+        $table->decimal('price', 12, 2);
+        $table->integer('quantity')->default(0);
+        $table->string('image_path')->nullable();
         $table->timestamps();
     });
 }
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('ng');
+        Schema::dropIfExists('products');
     }
 };

@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\History;
 
 class User extends Authenticatable
 {
@@ -15,10 +13,6 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
     use HasApiTokens;
 
-     public function history()
-{
-    return $this->hasMany(History::class);
-}
     /**
      * The attributes that are mass assignable.
      *
